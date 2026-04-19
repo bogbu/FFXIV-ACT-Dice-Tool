@@ -130,6 +130,11 @@ public class MainViewModel : ObservableObject
 
     private void StartSession()
     {
+        if (!EnsureWatchingForSessionStart())
+        {
+            return;
+        }
+
         _sessionManager.StartSession();
         SessionStart = _sessionManager.CurrentSession.StartTime;
         SessionEnd = null;
@@ -141,6 +146,34 @@ public class MainViewModel : ObservableObject
         Rolls.Clear();
         ClearDedupCache();
         RefreshCommands();
+    }
+
+    private bool EnsureWatchingForSessionStart()
+    {
+        if (_logWatcher.IsWatching)
+        {
+            return true;
+        }
+
+        if (string.IsNullOrWhiteSpace(LogPath))
+        {
+            using var dialog = new Forms.FolderBrowserDialog
+            {
+                Description = "집계를 시작하려면 ACT 로그 폴더를 선택하세요.",
+                UseDescriptionForTitle = true
+            };
+
+            if (dialog.ShowDialog() != Forms.DialogResult.OK)
+            {
+                WatchStatus = "집계 시작 취소";
+                return false;
+            }
+
+            LogPath = dialog.SelectedPath;
+        }
+
+        _logWatcher.Start(LogPath);
+        return _logWatcher.IsWatching;
     }
 
     private void EndSession()
