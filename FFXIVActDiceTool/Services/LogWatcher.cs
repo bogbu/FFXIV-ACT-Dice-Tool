@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace FFXIVActDiceTool.Services;
 
@@ -58,6 +59,9 @@ public class LogWatcher : IDisposable
     {
         var source = _sourcePath ?? string.Empty;
         var isDirectory = Directory.Exists(source);
+        var rolloverFolder = isDirectory ? source : Path.GetDirectoryName(source);
+        var rolloverPattern = isDirectory ? "*.log" : TryGetRolloverSearchPattern(source);
+        var canRollover = !string.IsNullOrWhiteSpace(rolloverFolder) && !string.IsNullOrWhiteSpace(rolloverPattern);
 
         if (!isDirectory && !File.Exists(source))
         {
@@ -66,7 +70,9 @@ public class LogWatcher : IDisposable
             return;
         }
 
-        _activeFile = isDirectory ? ResolveLatestLogFile(source) : source;
+        _activeFile = isDirectory
+            ? ResolveLatestLogFile(source, "*.log")
+            : source;
 
         if (string.IsNullOrWhiteSpace(_activeFile))
         {
@@ -89,10 +95,10 @@ public class LogWatcher : IDisposable
 
             position = await ReadNewLinesAsync(_activeFile, position, token);
 
-            if (isDirectory && DateTime.UtcNow - lastScan >= _scanInterval)
+            if (canRollover && DateTime.UtcNow - lastScan >= _scanInterval)
             {
                 lastScan = DateTime.UtcNow;
-                var newest = ResolveLatestLogFile(source);
+                var newest = ResolveLatestLogFile(rolloverFolder!, rolloverPattern!);
 
                 if (!string.IsNullOrWhiteSpace(newest) && !string.Equals(newest, _activeFile, StringComparison.OrdinalIgnoreCase))
                 {
@@ -150,13 +156,32 @@ public class LogWatcher : IDisposable
         return startPosition;
     }
 
-    private static string? ResolveLatestLogFile(string folder)
+    private static string? ResolveLatestLogFile(string folder, string pattern)
     {
-        return Directory.EnumerateFiles(folder, "*.log", SearchOption.TopDirectoryOnly)
+        return Directory.EnumerateFiles(folder, pattern, SearchOption.TopDirectoryOnly)
             .Select(path => new FileInfo(path))
             .OrderByDescending(f => f.LastWriteTimeUtc)
             .FirstOrDefault()
             ?.FullName;
+    }
+
+    private static string? TryGetRolloverSearchPattern(string filePath)
+    {
+        var fileName = Path.GetFileNameWithoutExtension(filePath);
+        var extension = Path.GetExtension(filePath);
+
+        if (string.IsNullOrWhiteSpace(fileName) || string.IsNullOrWhiteSpace(extension))
+        {
+            return null;
+        }
+
+        var prefix = Regex.Replace(fileName, @"([_-]?\d{8}([_-]?\d{6})?)$", string.Empty);
+        if (string.IsNullOrWhiteSpace(prefix))
+        {
+            return null;
+        }
+
+        return $"{prefix}*{extension}";
     }
 
     public void Dispose()
