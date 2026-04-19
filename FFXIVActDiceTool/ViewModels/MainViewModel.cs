@@ -48,7 +48,7 @@ public class MainViewModel : ObservableObject
         _logWatcher.LineReceived += OnLineReceived;
         _logWatcher.StatusChanged += (_, message) =>
         {
-            Application.Current.Dispatcher.Invoke(() =>
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 WatchStatus = message;
                 ConnectionStatus = _logWatcher.ActiveFilePath ?? "미연결";
@@ -94,7 +94,7 @@ public class MainViewModel : ObservableObject
 
     private void SelectFile()
     {
-        var dialog = new OpenFileDialog { Filter = "Log files (*.log)|*.log|All files (*.*)|*.*" };
+        var dialog = new Microsoft.Win32.OpenFileDialog { Filter = "Log files (*.log)|*.log|All files (*.*)|*.*" };
         if (dialog.ShowDialog() == true)
         {
             LogPath = dialog.FileName;
@@ -200,7 +200,7 @@ public class MainViewModel : ObservableObject
             return;
         }
 
-        Application.Current.Dispatcher.Invoke(() =>
+        System.Windows.Application.Current.Dispatcher.Invoke(() =>
         {
             if (_sessionManager.CurrentSession.IsRunning)
             {
