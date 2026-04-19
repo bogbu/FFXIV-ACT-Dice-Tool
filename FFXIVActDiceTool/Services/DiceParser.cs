@@ -13,6 +13,7 @@ public class DiceParser
         _patterns = new List<Func<string, DiceRollEntry?>>
         {
             ParsePatternActLocalizedPipe,
+            ParsePatternKoreanBracketTimestamp,
             ParsePatternWithBracketTimestamp,
             ParsePatternWithPipeTimestamp,
             ParsePatternSimple
@@ -43,6 +44,16 @@ public class DiceParser
         return CreateIfValid(match, line);
     }
 
+    private static DiceRollEntry? ParsePatternKoreanBracketTimestamp(string line)
+    {
+        var match = Regex.Match(
+            line,
+            @"^\[(?<time>\d{1,2}:\d{2}(?::\d{2})?)\]\s*(?<name>.+?)\s*님이\s*주사위를\s*굴려\s*(?<value>\d{1,3})(?:이|가)\s*나왔습니다!?$",
+            RegexOptions.IgnoreCase);
+
+        return CreateIfValid(match, line);
+    }
+
     private static DiceRollEntry? ParsePatternWithPipeTimestamp(string line)
     {
         var match = Regex.Match(
@@ -67,7 +78,7 @@ public class DiceParser
 
         var messageMatch = Regex.Match(
             entryMatch.Groups["message"].Value,
-            @"^(?<name>.+?)\s*님이\s*주사위를\s*굴려\s*(?<value>\d{1,3})가\s*나왔습니다!$",
+            @"^(?<name>.+?)\s*님이\s*주사위를\s*굴려\s*(?<value>\d{1,3})(?:이|가)\s*나왔습니다!?$",
             RegexOptions.IgnoreCase);
 
         if (!messageMatch.Success)
@@ -75,11 +86,20 @@ public class DiceParser
             return null;
         }
 
-        var combined = Regex.Match(
-            $"{entryMatch.Groups["time"].Value}|{messageMatch.Groups["name"].Value}|{messageMatch.Groups["value"].Value}",
-            @"^(?<time>[^|]+)\|(?<name>[^|]+)\|(?<value>\d{1,3})$");
+        if (!int.TryParse(messageMatch.Groups["value"].Value, out var value) || value is < 0 or > 999)
+        {
+            return null;
+        }
 
-        return CreateIfValid(combined, line);
+        var timestamp = ParseTimestamp(entryMatch.Groups["time"].Value);
+
+        return new DiceRollEntry
+        {
+            Timestamp = timestamp,
+            PlayerName = messageMatch.Groups["name"].Value.Trim(),
+            RollValue = value,
+            RawLogLine = line
+        };
     }
 
     private static DiceRollEntry? ParsePatternSimple(string line)
@@ -104,24 +124,7 @@ public class DiceParser
             return null;
         }
 
-        var timeText = match.Groups["time"].Value;
-        DateTime timestamp;
-
-        if (DateTimeOffset.TryParse(timeText, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out var dto))
-        {
-            timestamp = dto.LocalDateTime;
-        }
-        else if (!DateTime.TryParse(timeText, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out timestamp))
-        {
-            if (TimeOnly.TryParse(timeText, out var timeOnly))
-            {
-                timestamp = DateTime.Today.Add(timeOnly.ToTimeSpan());
-            }
-            else
-            {
-                timestamp = DateTime.Now;
-            }
-        }
+        var timestamp = ParseTimestamp(match.Groups["time"].Value);
 
         return new DiceRollEntry
         {
@@ -130,5 +133,25 @@ public class DiceParser
             RollValue = value,
             RawLogLine = raw
         };
+    }
+
+    private static DateTime ParseTimestamp(string timeText)
+    {
+        if (DateTimeOffset.TryParse(timeText, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out var dto))
+        {
+            return dto.LocalDateTime;
+        }
+
+        if (DateTime.TryParse(timeText, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var timestamp))
+        {
+            return timestamp;
+        }
+
+        if (TimeOnly.TryParse(timeText, out var timeOnly))
+        {
+            return DateTime.Today.Add(timeOnly.ToTimeSpan());
+        }
+
+        return DateTime.Now;
     }
 }
