@@ -1,0 +1,99 @@
+<Window x:Class="FFXIVActDiceTool.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:models="clr-namespace:FFXIVActDiceTool.Models"
+        xmlns:helpers="clr-namespace:FFXIVActDiceTool.Helpers"
+        mc:Ignorable="d"
+        Title="FFXIV ACT Dice Tool"
+        Height="760"
+        Width="1200">
+    <Window.Resources>
+        <helpers:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
+    </Window.Resources>
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <GroupBox Header="로그 감시 설정" Padding="10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox Grid.Column="0" Margin="0,0,8,0" Text="{Binding LogPath, UpdateSourceTrigger=PropertyChanged}"/>
+                <Button Grid.Column="1" Margin="0,0,8,0" Padding="10,4" Content="파일 선택" Command="{Binding SelectFileCommand}"/>
+                <Button Grid.Column="2" Margin="0,0,8,0" Padding="10,4" Content="폴더 선택" Command="{Binding SelectFolderCommand}"/>
+                <Button Grid.Column="3" Margin="0,0,8,0" Padding="10,4" Content="감시 시작" Command="{Binding StartWatchingCommand}"/>
+                <Button Grid.Column="4" Padding="10,4" Content="감시 중지" Command="{Binding StopWatchingCommand}"/>
+            </Grid>
+        </GroupBox>
+
+        <Grid Grid.Row="1" Margin="0,10,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" VerticalAlignment="Center" Text="{Binding WatchStatus, StringFormat=감시 상태: {0}}"/>
+            <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{Binding ConnectionStatus, StringFormat=현재 연결: {0}}"/>
+            <Button Grid.Column="2" Margin="8,0" Padding="10,4" Content="집계 시작" Command="{Binding StartSessionCommand}"/>
+            <Button Grid.Column="3" Margin="0,0,8,0" Padding="10,4" Content="집계 종료" Command="{Binding EndSessionCommand}"/>
+            <Button Grid.Column="4" Padding="10,4" Content="초기화" Command="{Binding ResetSessionCommand}"/>
+        </Grid>
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
+
+            <GroupBox Header="실시간 감지 목록" Grid.Column="0" Margin="0,0,8,0" Padding="8">
+                <DataGrid ItemsSource="{Binding Rolls}" AutoGenerateColumns="False" IsReadOnly="True">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="시간" Binding="{Binding Timestamp, StringFormat=yyyy-MM-dd HH:mm:ss}" Width="180"/>
+                        <DataGridTextColumn Header="플레이어명" Binding="{Binding PlayerName}" Width="*"/>
+                        <DataGridTextColumn Header="다이스 값" Binding="{Binding RollValue}" Width="120"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </GroupBox>
+
+            <StackPanel Grid.Column="1">
+                <GroupBox Header="결과 패널" Margin="0,0,0,8" Padding="10">
+                    <StackPanel>
+                        <TextBlock Text="{Binding SessionStart, StringFormat=세션 시작: {0:yyyy-MM-dd HH:mm:ss}}" Margin="0,0,0,6"/>
+                        <TextBlock Text="{Binding SessionEnd, StringFormat=세션 종료: {0:yyyy-MM-dd HH:mm:ss}}" Margin="0,0,0,6"/>
+                        <TextBlock Text="{Binding UniquePlayerCount, StringFormat=참여 인원 수: {0}}" Margin="0,0,0,6"/>
+                        <TextBlock Text="{Binding TotalRollCount, StringFormat=총 굴림 수: {0}}" Margin="0,0,0,6"/>
+                        <TextBlock Text="{Binding HighestSummary, StringFormat=최고 다이스: {0}}" Margin="0,0,0,6" TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding LowestSummary, StringFormat=최저 다이스: {0}}" Margin="0,0,0,6" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="사용자 지정 순위 조회" Padding="10">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <RadioButton Content="높은 순" IsChecked="{Binding SelectedDirection, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static models:RankDirection.Highest}}"/>
+                            <RadioButton Content="낮은 순" Margin="16,0,0,0" IsChecked="{Binding SelectedDirection, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static models:RankDirection.Lowest}}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <TextBlock VerticalAlignment="Center" Text="N 순위:" Margin="0,0,8,0"/>
+                            <TextBox Width="60" Text="{Binding RankInput}"/>
+                            <Button Margin="8,0,0,0" Padding="10,4" Content="순위 조회" Command="{Binding QueryRankCommand}"/>
+                        </StackPanel>
+                        <TextBlock Text="{Binding RankResultText}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </GroupBox>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>
