@@ -1,9 +1,17 @@
-namespace FFXIVActDiceTool.Models;
+using System.Collections.Generic;
 
-public class DiceSessionResult
+namespace FFXIVActDiceTool.Models
 {
-    public List<DiceRollEntry> HighestRolls { get; set; } = new();
-    public List<DiceRollEntry> LowestRolls { get; set; } = new();
-    public int TotalRollCount { get; set; }
-    public int UniquePlayerCount { get; set; }
+    public class DiceSessionResult
+    {
+        public DiceSessionResult()
+        {
+            HighestRolls = new List<DiceRollEntry>();
+            LowestRolls = new List<DiceRollEntry>();
+        }
+        public List<DiceRollEntry> HighestRolls { get; set; }
+        public List<DiceRollEntry> LowestRolls { get; set; }
+        public int TotalRollCount { get; set; }
+        public int UniquePlayerCount { get; set; }
+    }
 }

@@ -1,9 +1,12 @@
-namespace FFXIVActDiceTool.Models;
+using System;
 
-public class DiceRollEntry
+namespace FFXIVActDiceTool.Models
 {
-    public DateTime Timestamp { get; set; }
-    public string PlayerName { get; set; } = string.Empty;
-    public int RollValue { get; set; }
-    public string RawLogLine { get; set; } = string.Empty;
+    public class DiceRollEntry
+    {
+        public DateTime Timestamp { get; set; }
+        public string PlayerName { get; set; } = string.Empty;
+        public int RollValue { get; set; }
+        public string RawLogLine { get; set; } = string.Empty;
+    }
 }
