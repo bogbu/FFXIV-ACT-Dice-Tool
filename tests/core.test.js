@@ -76,3 +76,20 @@ test('일반 브라우저에서는 bridge가 오류 없이 preview 상태가 된
   let status; const bridge = new OverlayBridge({ onLogLine() {}, onStatus(value) { status = value; } });
   assert.equal(bridge.connect({}), false); assert.equal(status.label, '브라우저 미리보기');
 });
+
+test('OverlayPlugin Web API가 있으면 LogLine을 구독하고 연결 상태가 된다', () => {
+  let listener; let started = false; let status; let received;
+  const scope = {
+    addOverlayListener(event, callback) { assert.equal(event, 'LogLine'); listener = callback; },
+    startOverlayEvents() { started = true; },
+  };
+  const bridge = new OverlayBridge({ onLogLine(line) { received = line; }, onStatus(value) { status = value; } });
+
+  assert.equal(bridge.connect(scope), true);
+  assert.equal(started, true);
+  assert.equal(status.label, 'ACT 연결됨 · 로그 대기 중');
+
+  listener({ rawLine: '[23:33]메이데이 님이 주사위를 굴려 721이 나왔습니다!' });
+  assert.equal(received, '[23:33]메이데이 님이 주사위를 굴려 721이 나왔습니다!');
+  assert.equal(status.label, 'ACT · 로그 수신 중');
+});
