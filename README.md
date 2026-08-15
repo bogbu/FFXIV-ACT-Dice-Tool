@@ -1,70 +1,80 @@
 # FFXIV ACT Dice Tool
 
-한국 FFXIV `/dice` 로그를 Advanced Combat Tracker(ACT) 안에서 실시간 집계하는 **.NET Framework 4.8 WinForms 플러그인**입니다. 별도 실행 파일, 로그 경로 선택, 파일 tail 감시는 사용하지 않습니다.
+한국 FFXIV `/dice` 결과를 실시간 집계하는 **ACT OverlayPlugin Web Overlay**입니다. DLL, .NET, 별도 서버 또는 빌드가 필요하지 않습니다.
 
-## 필요 프로그램
+## 설치
 
-- Windows 및 [.NET Framework 4.8 Developer Pack](https://dotnet.microsoft.com/download/dotnet-framework/net48)
-- Advanced Combat Tracker(ACT)
-- ACT가 FFXIV 로그를 읽도록 구성하는 **FFXIV Parsing Plugin** (FFXIV 로그 수신에 필요)
-- Visual Studio 2022 또는 .NET Framework 4.8을 빌드할 수 있는 MSBuild
+1. ACT, FFXIV Parsing Plugin, OverlayPlugin을 실행합니다.
+2. OverlayPlugin에서 **New → Custom Overlay**를 만듭니다.
+3. URL에 아래 주소를 입력합니다.
 
-## 빌드
+   **https://bogbu.github.io/FFXIV-ACT-Dice-Tool/**
 
-프로젝트는 ACT 설치 경로를 저장소에 하드코딩하지 않습니다. 다음 중 하나를 사용하십시오.
+4. Overlay를 활성화하고 원하는 크기로 조절합니다.
 
-```powershell
-# 환경 변수
-$env:ACT_PATH = 'C:\Program Files (x86)\Advanced Combat Tracker'
-msbuild .\FFXIVActDiceTool\FFXIVActDiceTool.csproj /t:Restore,Build /p:Configuration=Release
+> Overlay에 `ACT 연결됨 · 로그 대기 중`이 표시되면 연결된 상태입니다. 일반 브라우저에서는 `브라우저 미리보기`로 표시되며 UI는 정상 동작하지만 ACT 로그는 수신하지 않습니다.
 
-# 또는 MSBuild 속성
-msbuild .\FFXIVActDiceTool\FFXIVActDiceTool.csproj /t:Restore,Build /p:Configuration=Release /p:ACTPath="C:\Program Files (x86)\Advanced Combat Tracker"
+## 기능과 사용법
+
+- **집계 시작**: 이전 목록·통계·순위 결과·중복 캐시를 비우고 새 세션을 시작합니다.
+- **집계 종료**: 로그 수집을 멈추고 종료 시각과 현재 결과를 유지합니다. OverlayPlugin 구독은 계속 유지됩니다.
+- **초기화**: 세션과 화면 데이터를 대기 상태로 되돌립니다.
+- **실시간 결과**: 참여 인원, 총 굴림, 최고/최저 값과 모든 동점 플레이어를 즉시 표시합니다.
+- **순위 조회**: 높은 순 또는 낮은 순의 N위를 DenseRank로 조회합니다. `900, 900, 700`은 900 두 명이 1위, 700이 2위입니다.
+- **목록 제한**: 화면에는 최근 2,000행만 유지하지만 세션 통계와 순위는 전체 roll을 사용합니다.
+- **중복 방지**: timestamp, 플레이어, 값, 원본 로그 조합의 최근 500개 key를 보관합니다.
+
+세션이 `집계 중`일 때만 감지한 주사위를 추가합니다. 지원 범위에는 한국어 bracket timestamp, ACT localized pipe 형식과 기존 영문 bracket/pipe/simple 로그 형식이 포함되며 값 범위는 기존과 동일한 `0..999`입니다.
+
+## OverlayPlugin 요구사항
+
+이 Overlay는 OverlayPlugin Web API의 `LogLine` 이벤트를 구독합니다. 이벤트의 원본 `rawLine`을 우선 사용하고, 없는 버전에서는 문서화된 `line` field 배열을 pipe 형식으로 결합합니다. OverlayPlugin 전역 API가 없는 경우 자동으로 browser preview mode가 됩니다.
+
+데이터는 메모리에만 있으며 새로고침하면 초기화됩니다. 계정, 서버, 데이터베이스, localStorage 복구 기능은 사용하지 않습니다.
+
+## 브라우저 개발 및 테스트
+
+정적 파일이므로 별도 build step은 없습니다. ES module 보안 정책 때문에 로컬 파일을 직접 여는 대신 저장소 루트에서 정적 HTTP 서버를 실행하십시오.
+
+```bash
+python3 -m http.server 8000
 ```
 
-`ACTPath`는 `Advanced Combat Tracker.exe`가 들어 있는 **폴더**입니다. 대안으로 저장소 루트의 `lib/Advanced Combat Tracker.exe`도 인식하지만, ACT 바이너리는 Git에 커밋하지 마십시오. 결과물은 `FFXIVActDiceTool/bin/Release/net48/FFXIVActDiceTool.dll`입니다.
+`http://localhost:8000/?debug=1`을 열면 일반 UI 아래에 가짜 로그 입력기가 표시됩니다. 자동 회귀 테스트는 Node.js 20 이상에서 실행합니다.
 
-코어 회귀 테스트는 ACT 설치 없이 실행할 수 있습니다. 테스트 프로젝트는 ACT 비의존 소스를 링크해 파서, 세션, 순위, 중복 필터의 격리를 검증합니다.
-
-```powershell
-dotnet test .\FFXIVActDiceTool.Tests\FFXIVActDiceTool.Tests.csproj
+```bash
+npm test
 ```
-
-## ACT에 설치
-
-1. ACT와 FFXIV Parsing Plugin을 설치하고 게임 로그가 ACT에 표시되는지 확인합니다.
-2. ACT의 **Plugins** 탭에서 **Browse**를 누릅니다.
-3. 빌드된 `FFXIVActDiceTool.dll`을 선택해 **Add/Enable Plugin** 합니다.
-4. 플러그인 탭과 `FFXIV Dice Tool 활성화됨` 상태를 확인합니다.
-
-ACT가 전달한 실시간 `OnLogLineRead`만 처리하며 import 로그는 기본적으로 무시합니다. 플러그인을 비활성화하면 이벤트 구독을 해제하므로 재활성화해도 중복 구독되지 않습니다.
-
-## 사용법
-
-- **집계 시작**: 새 세션과 중복 캐시, 목록, 결과를 초기화하고 이후 주사위를 수집합니다. ACT 로그 연결은 플러그인 활성화 동안 계속 유지됩니다.
-- **집계 종료**: 종료 시각을 기록하고 최고/최저(동점 모두), 참여 인원, 총 굴림을 확정합니다.
-- **초기화**: 세션, UI 목록, 통계, 순위 결과, 중복 캐시를 비웁니다. ACT 이벤트 연결은 유지합니다.
-- **순위 조회**: 높은 순/낮은 순과 N을 선택합니다. 기본 DenseRank이므로 `900, 900, 700`은 각각 1위 두 명과 2위 한 명입니다.
-- 실시간 표는 성능을 위해 최근 2,000행만 보이지만 세션 데이터는 별도로 모두 유지됩니다.
 
 ## 구조
 
 ```text
-ACT OnLogLineRead
-  -> ACT/ActLogSource (import 필터, 구독 수명주기)
-  -> Plugin/DicePluginController (입력 조정)
-  -> Services/DiceParser
-  -> Services/DiceDuplicateFilter
-  -> Services/DiceSessionManager / RankCalculator
-  -> Plugin/DicePluginControl (WinForms UI, UI thread marshal)
+OverlayPlugin LogLine
+  → src/overlay/overlayBridge.js
+  → src/parser/diceParser.js
+  → src/services/duplicateFilter.js
+  → src/services/diceSessionManager.js
+  → src/services/rankCalculator.js
+  → src/ui/diceUI.js
 ```
 
-- `Plugin/DicePlugin.cs`: `IActPluginV1` 엔트리 및 ACT 탭 수명주기
-- `Logging/ILogSource.cs`, `ACT/ActLogSource.cs`: ACT 종속성을 입력 경계로 제한
-- `Models/*`, `Services/*`: ACT/UI 비의존 도메인 로직
-- `Plugin/DicePluginControl.cs`: 기본 WinForms 컨트롤만 사용하는 UI
-- `FFXIVActDiceTool.Tests`: ACT 없이 실행하는 코어 회귀 테스트
+`app.js`는 각 계층을 연결하기만 하며, DOM에는 사용자 문자열을 `textContent`로 추가합니다. 지속 timer나 전체 화면 polling을 사용하지 않고 dice 로그가 파싱된 경우에만 UI를 갱신합니다.
 
-## Legacy
+## GitHub Pages
 
-이 저장소는 기존 WPF 독립 실행 프로그램에서 ACT 플러그인으로 전환되었습니다. 로그 파일/폴더 선택, 직접 파일 감시, 롤오버 감시 및 별도 EXE는 플러그인에서 의미가 없어 제거되었습니다.
+`.github/workflows/deploy-pages.yml`은 `main` push 시 테스트 후 저장소의 정적 파일을 GitHub Pages 공식 Actions로 배포합니다. Repository **Settings → Pages → Source**가 **GitHub Actions**로 설정되어 있어야 합니다.
+
+CSS/JavaScript는 project site에서도 동작하도록 상대 경로를 사용하며, asset query version `2.0.0`으로 OverlayPlugin WebView 캐시를 갱신할 수 있습니다.
+
+## 마이그레이션 기능 비교
+
+- [x] 한국 서버 `/dice` 및 기존 raw ACT 형식 파싱
+- [x] 실시간 목록 / 집계 시작 / 집계 종료 / 초기화
+- [x] 최고값 / 최저값 / 최고·최저 동점
+- [x] 총 굴림 수 / 대소문자를 무시한 고유 참여 인원
+- [x] 높은 순 N위 / 낮은 순 N위 / DenseRank
+- [x] bounded 중복 로그 방지 / 최대 UI 2,000행
+- [x] OverlayPlugin `LogLine` 및 일반 브라우저 fallback
+- [x] responsive Web UI / GitHub Pages 자동 배포
+
+기존 ACT Plugin DLL과 WinForms/.NET 프로젝트는 Web Overlay 이식 및 회귀 테스트 완료 후 제거되었습니다.

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>FFXIV Dice Tool</title>
+  <link rel="stylesheet" href="./styles.css?v=2.0.0">
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <div><p class="eyebrow">OVERLAY UTILITY</p><h1>FFXIV Dice Tool</h1></div>
+      <div id="connection" class="connection preview"><span aria-hidden="true"></span><strong>브라우저 미리보기</strong></div>
+    </header>
+
+    <section class="toolbar" aria-label="세션 제어">
+      <button id="start" class="primary" type="button">집계 시작</button>
+      <button id="stop" type="button" disabled>집계 종료</button>
+      <button id="reset" class="quiet" type="button">초기화</button>
+      <p id="session-state" class="session-state">대기 중</p>
+    </section>
+
+    <div class="layout">
+      <section class="panel rolls-panel">
+        <div class="panel-title"><div><p class="eyebrow">LIVE FEED</p><h2>실시간 다이스</h2></div><span id="visible-count">0 / 2,000</span></div>
+        <div class="table-wrap">
+          <table><thead><tr><th>시간</th><th>플레이어</th><th class="number">값</th></tr></thead><tbody id="roll-list"></tbody></table>
+          <p id="empty-rolls" class="empty">집계를 시작하면 주사위 기록이 여기에 표시됩니다.</p>
+        </div>
+      </section>
+
+      <aside class="side">
+        <section class="panel results">
+          <div class="panel-title"><div><p class="eyebrow">SESSION</p><h2>현재 결과</h2></div></div>
+          <dl class="metrics">
+            <div><dt>참여 인원</dt><dd id="players">0</dd></div><div><dt>총 굴림</dt><dd id="rolls">0</dd></div>
+          </dl>
+          <div class="extremes"><article><span>최고</span><strong id="highest">-</strong></article><article><span>최저</span><strong id="lowest">-</strong></article></div>
+          <dl class="times"><div><dt>시작</dt><dd id="started">-</dd></div><div><dt>종료</dt><dd id="ended">-</dd></div></dl>
+        </section>
+        <section class="panel rank-panel">
+          <div class="panel-title"><div><p class="eyebrow">DENSE RANK</p><h2>순위 조회</h2></div></div>
+          <form id="rank-form">
+            <fieldset><legend class="sr-only">정렬 방향</legend><label><input type="radio" name="direction" value="highest" checked> 높은 순</label><label><input type="radio" name="direction" value="lowest"> 낮은 순</label></fieldset>
+            <div class="rank-query"><label for="rank">N 순위</label><input id="rank" type="number" min="1" max="9999" value="1" required><button type="submit">조회</button></div>
+          </form>
+          <p id="rank-result" class="rank-result" aria-live="polite">조회 전</p>
+        </section>
+      </aside>
+    </div>
+
+    <section id="debug-panel" class="panel debug" hidden>
+      <div><p class="eyebrow">DEBUG MODE</p><h2>가짜 로그 입력</h2></div>
+      <form id="debug-form"><input id="debug-log" aria-label="테스트 로그" value="[23:33]메이데이 님이 주사위를 굴려 721이 나왔습니다!"><button type="submit">전송</button></form>
+    </section>
+  </main>
+  <script type="module" src="./app.js?v=2.0.0"></script>
+</body>
+</html>
