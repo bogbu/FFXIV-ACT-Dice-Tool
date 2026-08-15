@@ -1,9 +1,10 @@
 import { createDiceRoll } from '../models/diceRoll.js';
 
 const VALUE = '(?<value>\\d{1,3})(?!\\d)';
+const DICE_ICON = '(?:🎲\\uFE0F?\\s*)?';
 const patterns = [
   parseActLocalizedPipe,
-  (line) => matchLine(line, new RegExp(`^\\[(?<time>\\d{1,2}:\\d{2}(?::\\d{2})?)\\]\\s*(?<name>.+?)\\s*님이\\s*주사위를\\s*굴려\\s*${VALUE}(?:이|가)\\s*나왔습니다!?$`, 'iu')),
+  (line) => matchLine(line, new RegExp(`^\\[(?<time>\\d{1,2}:\\d{2}(?::\\d{2})?)\\]\\s*(?<name>.+?)\\s*님이\\s*주사위를\\s*굴려\\s*${DICE_ICON}${VALUE}(?:이|가)\\s*나왔습니다!?$`, 'iu')),
   (line) => matchLine(line, new RegExp(`^\\[(?<time>\\d{4}-\\d{2}-\\d{2}[ T]\\d{2}:\\d{2}:\\d{2})\\].*?(?<name>[\\p{L}\\p{N}_' -]+) rolls? ${VALUE}`, 'iu')),
   (line) => matchLine(line, new RegExp(`^(?<time>\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2})\\|.*?\\|(?<name>[^|]+?)\\s+(?:rolls?|casts.*?/dice).*?${VALUE}$`, 'iu')),
   (line) => matchLine(line, new RegExp(`^(?<time>\\d{2}:\\d{2}:\\d{2}).*?(?<name>[\\p{L}\\p{N}_' -]+) (?:rolls?|obtains).*?${VALUE}`, 'iu')),
@@ -21,7 +22,7 @@ export function parseDiceRoll(line) {
 function parseActLocalizedPipe(line) {
   const envelope = /^(?:00|0?0)\|(?<time>[^|]+)\|[^|]*\|\|(?<message>[^|]+)\|/iu.exec(line);
   if (!envelope) return null;
-  const message = /^(?<name>.+?)\s*님이\s*주사위를\s*굴려\s*(?<value>\d{1,3})(?:이|가)\s*나왔습니다!?$/iu.exec(envelope.groups.message);
+  const message = new RegExp(`^(?<name>.+?)\\s*님이\\s*주사위를\\s*굴려\\s*${DICE_ICON}(?<value>\\d{1,3})(?:이|가)\\s*나왔습니다!?$`, 'iu').exec(envelope.groups.message);
   return createFromMatch(message, line, envelope.groups.time);
 }
 

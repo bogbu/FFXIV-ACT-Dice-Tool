@@ -14,6 +14,13 @@
 
 > Overlay에 `ACT 연결됨 · 로그 대기 중`이 표시되면 연결된 상태입니다. 일반 브라우저에서는 `브라우저 미리보기`로 표시되며 UI는 정상 동작하지만 ACT 로그는 수신하지 않습니다.
 
+### 로그가 잡히지 않을 때
+
+1. 우측 상단이 `브라우저 미리보기`라면 ACT와 연결되지 않은 상태입니다. 외부 브라우저 창이 아니라 OverlayPlugin에서 만든 **Custom Overlay 자체**를 활성화하고 그 안에서 URL을 여십시오.
+2. `ACT 연결됨 · 로그 대기 중`인지 확인한 뒤 **집계 시작**을 누르십시오. 세션이 `집계 중`일 때만 결과가 추가됩니다.
+3. 게임 채팅에 `/dice` 결과가 보여도 잡히지 않으면 OverlayPlugin의 LogLine 이벤트 및 FFXIV Parsing Plugin 동작 여부를 확인하십시오.
+4. 한국 클라이언트가 숫자 앞에 표시하는 `🎲` 아이콘이 포함된 로그도 지원합니다.
+
 ## 기능과 사용법
 
 - **집계 시작**: 이전 목록·통계·순위 결과·중복 캐시를 비우고 새 세션을 시작합니다.
@@ -64,7 +71,7 @@ OverlayPlugin LogLine
 
 `.github/workflows/deploy-pages.yml`은 `main` push 시 테스트 후 저장소의 정적 파일을 GitHub Pages 공식 Actions로 배포합니다. Repository **Settings → Pages → Source**가 **GitHub Actions**로 설정되어 있어야 합니다.
 
-CSS/JavaScript는 project site에서도 동작하도록 상대 경로를 사용하며, asset query version `2.0.0`으로 OverlayPlugin WebView 캐시를 갱신할 수 있습니다.
+CSS/JavaScript는 project site에서도 동작하도록 상대 경로를 사용하며, asset query version `2.0.1`로 OverlayPlugin WebView 캐시를 갱신할 수 있습니다.
 
 ## 마이그레이션 기능 비교
 
