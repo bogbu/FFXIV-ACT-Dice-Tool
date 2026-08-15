@@ -13,10 +13,21 @@ test('한국어 bracket timestamp 로그를 파싱한다', () => {
   assert.equal(result.playerName, '메이데이'); assert.equal(result.rollValue, 721);
 });
 
+test('한국 클라이언트가 표시하는 주사위 아이콘이 포함된 로그를 파싱한다', () => {
+  const result = parseDiceRoll('[2:41]메이데이 님이 주사위를 굴려 🎲 989가 나왔습니다!');
+  assert.equal(result.playerName, '메이데이'); assert.equal(result.rollValue, 989);
+});
+
 test('ACT localized pipe 로그를 파싱한다', () => {
   const raw = '00|2026-08-15T23:33:14.0000000+09:00|0139||메이데이 님이 주사위를 굴려 721이 나왔습니다!|deadbeef';
   const result = parseDiceRoll(raw);
   assert.equal(result.playerName, '메이데이'); assert.equal(result.rollValue, 721); assert.equal(result.rawLogLine, raw);
+});
+
+test('주사위 아이콘이 포함된 ACT localized pipe 로그를 파싱한다', () => {
+  const raw = '00|2026-08-16T02:41:41.0000000+09:00|0139||메이데이 님이 주사위를 굴려 🎲 989가 나왔습니다!|deadbeef';
+  const result = parseDiceRoll(raw);
+  assert.equal(result.playerName, '메이데이'); assert.equal(result.rollValue, 989);
 });
 
 test('기존 영문 패턴과 값 범위를 유지한다', () => {
