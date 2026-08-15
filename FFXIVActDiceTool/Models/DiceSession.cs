@@ -1,9 +1,14 @@
-namespace FFXIVActDiceTool.Models;
+using System;
+using System.Collections.Generic;
 
-public class DiceSession
+namespace FFXIVActDiceTool.Models
 {
-    public bool IsRunning { get; set; }
-    public DateTime? StartTime { get; set; }
-    public DateTime? EndTime { get; set; }
-    public List<DiceRollEntry> Rolls { get; set; } = new();
+    public class DiceSession
+    {
+        public DiceSession() { Rolls = new List<DiceRollEntry>(); }
+        public bool IsRunning { get; set; }
+        public DateTime? StartTime { get; set; }
+        public DateTime? EndTime { get; set; }
+        public List<DiceRollEntry> Rolls { get; set; }
+    }
 }

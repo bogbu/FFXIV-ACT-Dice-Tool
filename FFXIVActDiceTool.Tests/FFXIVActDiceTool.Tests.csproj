@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>7.3</LangVersion>
+    <IsPackable>false</IsPackable>
+    <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="NUnit" Version="3.14.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\FFXIVActDiceTool\Models\*.cs" Link="Models\%(Filename)%(Extension)" />
+    <Compile Include="..\FFXIVActDiceTool\Services\DiceParser.cs" Link="Services\DiceParser.cs" />
+    <Compile Include="..\FFXIVActDiceTool\Services\DiceSessionManager.cs" Link="Services\DiceSessionManager.cs" />
+    <Compile Include="..\FFXIVActDiceTool\Services\RankCalculator.cs" Link="Services\RankCalculator.cs" />
+    <Compile Include="..\FFXIVActDiceTool\Services\DiceDuplicateFilter.cs" Link="Services\DiceDuplicateFilter.cs" />
+  </ItemGroup>
+</Project>
