@@ -12,7 +12,7 @@
 
 4. Overlay를 활성화하고 원하는 크기로 조절합니다.
 
-> Overlay에 `ACT 연결됨 · 로그 대기 중`이 표시되면 연결된 상태입니다. 일반 브라우저에서는 `브라우저 미리보기`로 표시되며 UI는 정상 동작하지만 ACT 로그는 수신하지 않습니다.
+> Overlay에 `ACT 연결됨 · 로그 대기 중`이 표시되면 연결된 상태입니다. 일반 브라우저에서는 `브라우저 미리보기`로 표시되며 UI는 정상 동작하지만 ACT 로그는 수신하지 않습니다. 연결 상태가 바뀌지 않으면 OverlayPlugin의 **새로고침**을 눌러 캐시된 이전 페이지를 갱신하십시오.
 
 ### 로그가 잡히지 않을 때
 
@@ -35,7 +35,7 @@
 
 ## OverlayPlugin 요구사항
 
-이 Overlay는 OverlayPlugin Web API의 `LogLine` 이벤트를 구독합니다. 이벤트의 원본 `rawLine`을 우선 사용하고, 없는 버전에서는 문서화된 `line` field 배열을 pipe 형식으로 결합합니다. OverlayPlugin 전역 API가 없는 경우 자동으로 browser preview mode가 됩니다.
+이 Overlay는 OverlayPlugin 공식 `common.min.js` compatibility layer를 먼저 불러온 뒤 Web API의 `LogLine` 이벤트를 구독합니다. 이벤트의 원본 `rawLine`을 우선 사용하고, 없는 버전에서는 문서화된 `line` field 배열을 pipe 형식으로 결합합니다. OverlayPlugin 전역 API가 없는 경우 자동으로 browser preview mode가 됩니다.
 
 데이터는 메모리에만 있으며 새로고침하면 초기화됩니다. 계정, 서버, 데이터베이스, localStorage 복구 기능은 사용하지 않습니다.
 
@@ -71,7 +71,7 @@ OverlayPlugin LogLine
 
 `.github/workflows/deploy-pages.yml`은 `main` push 시 테스트 후 저장소의 정적 파일을 GitHub Pages 공식 Actions로 배포합니다. Repository **Settings → Pages → Source**가 **GitHub Actions**로 설정되어 있어야 합니다.
 
-CSS/JavaScript는 project site에서도 동작하도록 상대 경로를 사용하며, asset query version `2.0.1`로 OverlayPlugin WebView 캐시를 갱신할 수 있습니다.
+CSS/JavaScript는 project site에서도 동작하도록 상대 경로를 사용하며, asset query version `2.0.2`로 OverlayPlugin WebView 캐시를 갱신할 수 있습니다.
 
 ## 마이그레이션 기능 비교
 
